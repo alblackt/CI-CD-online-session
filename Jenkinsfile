@@ -13,6 +13,6 @@ pipeline {
 
   }
   environment {
-    registry = 'unloki.cicd'
+    registry = 'unloki/cicd'
   }
 }
