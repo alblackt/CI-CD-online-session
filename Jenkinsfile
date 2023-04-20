@@ -1,7 +1,7 @@
 pipeline {
   agent any
   stages {
-    stage('build') {
+    stage('Build') {
       steps {
         script {
           checkout scm
@@ -10,19 +10,41 @@ pipeline {
 
       }
     }
+    stage('unit-test'){
+      steps{
+        script {
+          docker.image("${registry}:${env.BUILD_ID}").inside {c ->
+          sh 'python app_test.py'}
+        
+        }
+      
+      }
+    
+    }
+    stage('http-test'){
+      steps{
+        script {
+          docker.image("${registry}:${env.BUILD_ID}").withRun('-p 9005:9000') {c ->
+          sh "sleep 5; curl -i http://localhost:9005/test_string"}
 
-    stage('publish') {
+        }
+      
+      }
+    
+    }
+    stage('Publish') {
       steps {
         script {
           docker.withRegistry('', 'dockerhub-id') {
-            docker.image("${registry}:${env.BUILD_ID}").push('latest')}
+            docker.image("${registry}:${env.BUILD_ID}").push('latest')
           }
-
         }
-      }
 
+      }
     }
-    environment {
-      registry = 'unloki/cicd'
-    }
+
   }
+  environment {
+    registry = 'vpanton/flask-app'
+  }
+}
